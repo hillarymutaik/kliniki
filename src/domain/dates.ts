@@ -28,6 +28,12 @@ export function clockTime(now: number = Date.now()): string {
   return new Date(now + EAT_OFFSET_MS).toISOString().slice(11, 16);
 }
 
+/** Milliseconds until the EAT date changes, so a screen left open overnight can roll over to the new day. */
+export function msUntilNextDay(now: number = Date.now()): number {
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  return DAY_MS - ((now + EAT_OFFSET_MS) % DAY_MS);
+}
+
 const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 export function parseDate(value: string): { y: number; m: number; d: number; date: Date } | null {

@@ -1,4 +1,4 @@
-import { addDays, ageYears, clockTime, formatLongDate, isValidDate, isValidTime, today } from './dates';
+import { addDays, ageYears, clockTime, formatLongDate, isValidDate, isValidTime, msUntilNextDay, today } from './dates';
 import { formatNumber, kes } from './money';
 
 describe('East Africa Time', () => {
@@ -7,6 +7,24 @@ describe('East Africa Time', () => {
     expect(today(Date.UTC(2026, 9, 1, 21, 0))).toBe('2026-10-02');
     expect(clockTime(Date.UTC(2026, 9, 1, 21, 30))).toBe('00:30');
     expect(clockTime(Date.UTC(2026, 9, 1, 6, 5))).toBe('09:05');
+  });
+});
+
+describe('msUntilNextDay', () => {
+  it('counts down to midnight EAT, which is 21:00 UTC', () => {
+    const HOUR = 60 * 60 * 1000;
+    expect(msUntilNextDay(Date.UTC(2026, 9, 1, 20, 0))).toBe(HOUR);
+    expect(msUntilNextDay(Date.UTC(2026, 9, 1, 6, 0))).toBe(15 * HOUR);
+  });
+
+  it('lands exactly on the day change', () => {
+    const now = Date.UTC(2026, 9, 1, 13, 17, 42);
+    expect(today(now + msUntilNextDay(now) - 1)).toBe('2026-10-01');
+    expect(today(now + msUntilNextDay(now))).toBe('2026-10-02');
+  });
+
+  it('is a full day right at midnight', () => {
+    expect(msUntilNextDay(Date.UTC(2026, 9, 1, 21, 0))).toBe(24 * 60 * 60 * 1000);
   });
 });
 

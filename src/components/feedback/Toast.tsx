@@ -18,40 +18,26 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const { colors } = useTheme();
   const { isWide } = useLayout();
   const insets = useSafeAreaInsets();
-  const [message, setMessage] = useState('');
+  const reduceMotion = useReduceMotion();
+  // The id makes a repeat of the same message count as a new toast, restarting its timer.
+  const [toast, setToast] = useState<{ message: string; id: number } | null>(null);
   const [progress] = useState(() => new Animated.Value(0));
-  const [timer] = useState<{ id?: ReturnType<typeof setTimeout> }>(() => ({}));
-  const [motion] = useState({ reduced: false });
 
   useEffect(() => {
-    AccessibilityInfo.isReduceMotionEnabled().then((reduced) => {
-      motion.reduced = reduced;
-    });
-    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', (reduced) => {
-      motion.reduced = reduced;
-    });
-    return () => {
-      subscription.remove();
-      clearTimeout(timer.id);
-    };
-  }, [motion, timer]);
+    if (!toast) return;
+    const fade = (toValue: number) =>
+      Animated.timing(progress, {
+        toValue,
+        duration: reduceMotion ? 0 : FADE_MS,
+        useNativeDriver: Platform.OS !== 'web',
+      }).start();
 
-  const show = useCallback(
-    (text: string) => {
-      const fade = (toValue: number) =>
-        Animated.timing(progress, {
-          toValue,
-          duration: motion.reduced ? 0 : FADE_MS,
-          useNativeDriver: Platform.OS !== 'web',
-        }).start();
+    fade(1);
+    const timer = setTimeout(() => fade(0), VISIBLE_MS);
+    return () => clearTimeout(timer);
+  }, [toast, progress, reduceMotion]);
 
-      clearTimeout(timer.id);
-      setMessage(text);
-      fade(1);
-      timer.id = setTimeout(() => fade(0), VISIBLE_MS);
-    },
-    [progress, timer, motion],
-  );
+  const show = useCallback((message: string) => setToast((current) => ({ message, id: (current?.id ?? 0) + 1 })), []);
 
   return (
     <ToastContext.Provider value={show}>
@@ -70,12 +56,22 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           ]}
         >
           <AppText weight={600} color="bg">
-            {message}
+            {toast?.message ?? ''}
           </AppText>
         </Animated.View>
       </View>
     </ToastContext.Provider>
   );
+}
+
+function useReduceMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled().then(setReduced);
+    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduced);
+    return () => subscription.remove();
+  }, []);
+  return reduced;
 }
 
 const styles = StyleSheet.create({

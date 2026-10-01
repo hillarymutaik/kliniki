@@ -6,7 +6,7 @@ import { seedData } from '@/domain/seed';
 import { isAppData, STORAGE_KEY, useKlinikiStore } from './store';
 
 jest.mock('@react-native-async-storage/async-storage', () =>
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
+  jest.requireActual('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 
 const state = () => useKlinikiStore.getState();

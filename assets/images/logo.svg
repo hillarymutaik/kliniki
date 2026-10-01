@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#25866B"/>
+      <stop offset="100%" stop-color="#186549"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded background -->
+  <rect width="1024" height="1024" rx="220" fill="url(#bg)"/>
+
+  <!-- Medical cross + K lettermark (white) -->
+  <!--
+    The stem doubles as the cross's vertical bar.
+    The short left rect creates the cross's horizontal arm.
+    The two rotated rectangles are consistent-width diagonal K arms.
+    Arm pivot is at the stem's right-centre (455, 512).
+  -->
+  <g fill="white">
+    <!-- Left arm of medical cross -->
+    <rect x="178" y="447" width="131" height="130"/>
+
+    <!-- K stem / cross vertical bar -->
+    <rect x="309" y="182" width="146" height="660"/>
+
+    <!-- Upper arm of K (rotated rectangle, consistent 130 px stroke width) -->
+    <rect x="455" y="447" width="440" height="130"
+          transform="rotate(-37, 455, 512)"/>
+
+    <!-- Lower arm of K -->
+    <rect x="455" y="447" width="440" height="130"
+          transform="rotate(37, 455, 512)"/>
+  </g>
+</svg>

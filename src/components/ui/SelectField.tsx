@@ -16,7 +16,7 @@ import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/theme';
 
 import { AppText } from './AppText';
-import { Field, inputStyle } from './Field';
+import { Field, inputBoxStyle } from './Field';
 import { Icon } from './Icon';
 
 export interface SelectOption {
@@ -52,7 +52,7 @@ export function SelectField({ label, value, options, onChange, error, placeholde
         aria-label={`${label}: ${selected?.label ?? placeholder}`}
         aria-expanded={open}
         onPress={() => setOpen(true)}
-        style={[inputStyle(colors, { invalid: !!error }), styles.trigger]}
+        style={[inputBoxStyle(colors, { invalid: !!error }), styles.trigger]}
       >
         <AppText numberOfLines={1} color={selected ? 'ink' : 'muted'} style={styles.triggerText}>
           {selected ? selected.label : placeholder}
@@ -114,8 +114,9 @@ function OptionSheet({ title, options, value, onSelect, onClose }: OptionSheetPr
       >
         {/* Sits under the sheet, so a tap outside it dismisses the list. */}
         <Pressable focusable={false} aria-hidden style={StyleSheet.absoluteFill} onPress={onClose} />
+        {/* React Native has no listbox role; a radio group says the same thing: pick one of these. */}
         <View
-          role="listbox"
+          role="radiogroup"
           aria-label={title}
           style={[styles.sheet, { width: Math.min(480, width * 0.92), backgroundColor: colors.surface }]}
         >
@@ -177,8 +178,8 @@ function OptionRow({
   const { colors } = useTheme();
   return (
     <Pressable
-      role="option"
-      aria-selected={selected}
+      role="radio"
+      aria-checked={selected}
       aria-disabled={option.disabled}
       disabled={option.disabled}
       onPress={() => onSelect(option.value)}

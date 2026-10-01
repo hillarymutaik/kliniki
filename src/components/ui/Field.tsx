@@ -29,12 +29,26 @@ export function Field({ label, error, children }: FieldProps) {
   );
 }
 
-/** Visual style shared by every text-like control so they all look like the prototype's inputs. */
-export function inputStyle(colors: Palette, state: { focused?: boolean; invalid?: boolean; readOnly?: boolean }): TextStyle {
+// Plain concrete types on purpose: React Native's ViewStyle and TextStyle disagree about several
+// properties (cursor, userSelect, outlineColor), and this has to fit both a TextInput and a Pressable.
+interface BoxStyle {
+  backgroundColor: string;
+  borderWidth: number;
+  borderColor: string;
+  borderRadius: number;
+  paddingVertical: number;
+  paddingHorizontal: number;
+  width: '100%';
+  opacity: number;
+  outlineStyle?: 'solid';
+  outlineWidth?: number;
+  outlineColor?: string;
+  outlineOffset?: number;
+}
+
+/** The box every text-like control shares, so they all look like the prototype's inputs. */
+export function inputBoxStyle(colors: Palette, state: { focused?: boolean; invalid?: boolean; readOnly?: boolean }): BoxStyle {
   return {
-    fontFamily: fontFamily(400),
-    fontSize: 15,
-    color: colors.ink,
     backgroundColor: colors.bg,
     borderWidth: 1,
     borderColor: state.invalid ? colors.red : colors.line,
@@ -48,6 +62,12 @@ export function inputStyle(colors: Palette, state: { focused?: boolean; invalid?
       : null),
   };
 }
+
+export const inputTextStyle = (colors: Palette): TextStyle => ({
+  fontFamily: fontFamily(400),
+  fontSize: 15,
+  color: colors.ink,
+});
 
 const styles = StyleSheet.create({
   field: { gap: 4, marginBottom: 12 },

@@ -4,7 +4,7 @@ import { Platform, TextInput, type TextInputProps } from 'react-native';
 import { useTheme } from '@/theme/theme';
 
 import { useSubmitOnEnter } from './Dialog';
-import { Field, inputStyle } from './Field';
+import { Field, inputBoxStyle, inputTextStyle } from './Field';
 
 export interface TextFieldProps extends Omit<TextInputProps, 'style' | 'value' | 'onChangeText'> {
   label: string;
@@ -33,7 +33,7 @@ export function TextField({ label, value, onChangeText, error, readOnly, onSubmi
         onBlur={() => setFocused(false)}
         // Enter submits the form on the web, as it does in an HTML form. Native keyboards just dismiss.
         onSubmitEditing={onSubmitEditing ?? (Platform.OS === 'web' && submit ? () => submit() : undefined)}
-        style={inputStyle(colors, { focused, invalid: !!error, readOnly })}
+        style={[inputBoxStyle(colors, { focused, invalid: !!error, readOnly }), inputTextStyle(colors)]}
       />
     </Field>
   );
