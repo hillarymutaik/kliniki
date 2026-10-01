@@ -75,7 +75,7 @@ export function DataTable<T>({ columns, rows, keyOf, empty, onRowPress, rowLabel
 
       {shown.map((row, index) => {
         const last = index === shown.length - 1 && rows.length <= limit;
-        const border = { borderBottomColor: colors.line, borderBottomWidth: last ? 0 : StyleSheet.hairlineWidth * 2 };
+        const border = { borderBottomColor: colors.line, borderBottomWidth: last ? 0 : 1 };
         const content = compact ? (
           <Card row={row} columns={columns} heading={heading} />
         ) : (

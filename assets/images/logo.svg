@@ -1,4 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!--
+    Kliniki logo mark — 1024×1024 master SVG.
+
+    Concept: bold K letterform + medical cross stub.
+    The cross arm (left stub) shares the exact y-range as the K's mid-notch
+    so the two read as a single unified mark.
+
+    All bars are 100 px wide.
+    Horizontal: x=162–862 (700 px), centred with 162 px margins.
+    Vertical:   y=182–842 (660 px), centred with 182 px margins.
+    Arms are parallelograms — both edges parallel — giving constant stroke
+    width along the full length of each arm.
+  -->
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#25866B"/>
@@ -6,29 +19,21 @@
     </linearGradient>
   </defs>
 
-  <!-- Rounded background -->
+  <!-- Background -->
   <rect width="1024" height="1024" rx="220" fill="url(#bg)"/>
 
-  <!-- Medical cross + K lettermark (white) -->
-  <!--
-    The stem doubles as the cross's vertical bar.
-    The short left rect creates the cross's horizontal arm.
-    The two rotated rectangles are consistent-width diagonal K arms.
-    Arm pivot is at the stem's right-centre (455, 512).
-  -->
+  <!-- Mark (white) -->
   <g fill="white">
-    <!-- Left arm of medical cross -->
-    <rect x="178" y="447" width="131" height="130"/>
+    <!-- Medical cross left stub (aligns with K notch at y 462–562) -->
+    <rect x="162" y="462" width="100" height="100"/>
 
-    <!-- K stem / cross vertical bar -->
-    <rect x="309" y="182" width="146" height="660"/>
+    <!-- K stem (also the cross vertical bar) -->
+    <rect x="262" y="182" width="100" height="660"/>
 
-    <!-- Upper arm of K (rotated rectangle, consistent 130 px stroke width) -->
-    <rect x="455" y="447" width="440" height="130"
-          transform="rotate(-37, 455, 512)"/>
+    <!-- K upper arm — parallelogram, 100 px stroke throughout -->
+    <polygon points="362,362 862,182 862,282 362,462"/>
 
-    <!-- Lower arm of K -->
-    <rect x="455" y="447" width="440" height="130"
-          transform="rotate(37, 455, 512)"/>
+    <!-- K lower arm — parallelogram, 100 px stroke throughout -->
+    <polygon points="362,562 862,730 862,830 362,662"/>
   </g>
 </svg>

@@ -18,7 +18,9 @@ export function ScreenHeader({ title, subtitle, actions, back }: ScreenHeaderPro
     <View style={styles.head}>
       <View style={styles.titles}>
         {back ? (
-          <Link href={back.href} role="link" accessibilityLabel={`Back to ${back.label}`}>
+          // dismissTo pops back to the list instead of stacking a second copy on top. After a deep
+          // link straight to this page there is no list underneath, and the link replaces the page.
+          <Link href={back.href} dismissTo role="link" accessibilityLabel={`Back to ${back.label}`}>
             <AppText color="muted">{back.label}</AppText>
           </Link>
         ) : null}

@@ -1,11 +1,10 @@
 import { useFonts } from 'expo-font';
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, Slot, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useMemo } from 'react';
 
 import { ToastProvider } from '@/components/feedback/Toast';
-import { AppShell } from '@/components/layout/AppShell';
 import { ModalHost } from '@/components/modals/ModalHost';
 import { useHydrated } from '@/store/hooks';
 import { fontAssets } from '@/theme/fonts';
@@ -46,7 +45,8 @@ export default function RootLayout() {
       <ToastProvider>
         <ModalHost>
           <StatusBar style="auto" />
-          <AppShell />
+          {/* The (tabs) group with the app shell, or the not-found page for unknown URLs. */}
+          <Slot />
         </ModalHost>
       </ToastProvider>
     </ThemeProvider>

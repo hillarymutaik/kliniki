@@ -18,11 +18,35 @@ function render(svg, width, height) {
 // ─── SVG templates ──────────────────────────────────────────────────────────
 
 // Shared mark definition (white shapes, no background)
+//
+// Design: Bold K letterform with a short medical-cross arm extending left.
+//
+//   ┌─ stem ─┐
+//   │        │╲ upper arm
+//   │   ┤    │  ╲
+//   │        │  ╱ lower arm
+//   │        │╱
+//
+// The left stub (┤) is the cross arm. The stem's vertical bar doubles as
+// the cross's vertical bar. Trapezoid arms give consistent-looking strokes
+// while keeping the K's mouth clearly open to the right.
+//
+// All coordinates are on a 1024×1024 canvas.
+// Horizontal: content spans x=143–880 (737 px), centred with 143 px margins.
+// Vertical:   content spans y=182–842 (660 px), centred with 182 px margins.
+// All four bars are exactly 100 px wide, so the cross and K arms share
+// a unified stroke weight. The cross arm (left stub) sits at y=462-562,
+// which is the exact height of the K's mid-notch — they are one element.
+// Arms are parallelograms (both edges parallel) so stroke width is
+// constant along the full length of each arm.
+//
+// Horizontal span: x=162–862 = 700 px → centred with 162 px margins.
+// Vertical span:   y=182–842 = 660 px → centred with 182 px margins.
 const MARK_SHAPES = `
-  <rect x="178" y="447" width="131" height="130"/>
-  <rect x="309" y="182" width="146" height="660"/>
-  <rect x="455" y="447" width="440" height="130" transform="rotate(-37, 455, 512)"/>
-  <rect x="455" y="447" width="440" height="130" transform="rotate(37, 455, 512)"/>`;
+  <rect    x="162" y="462" width="100" height="100"/>
+  <rect    x="262" y="182" width="100" height="660"/>
+  <polygon points="362,362 862,182 862,282 362,462"/>
+  <polygon points="362,562 862,730 862,830 362,662"/>`;
 
 // Mark only (white on transparent) – used for splash, android foreground
 const MARK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
