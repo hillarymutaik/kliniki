@@ -2,6 +2,8 @@ import { Link, type Href } from 'expo-router';
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { useLayout } from '@/hooks/use-layout';
+
 import { AppText } from './AppText';
 
 interface ScreenHeaderProps {
@@ -11,12 +13,20 @@ interface ScreenHeaderProps {
   actions?: ReactNode;
   /** A link above the title that leads back up, e.g. Patients above a patient's name. */
   back?: { label: string; href: Href };
+  /** Screens reached through the More tab get a way back to it on phones, where the sidebar is not there. */
+  moreBack?: boolean;
 }
 
-export function ScreenHeader({ title, subtitle, actions, back }: ScreenHeaderProps) {
+export function ScreenHeader({ title, subtitle, actions, back, moreBack }: ScreenHeaderProps) {
+  const { isWide } = useLayout();
   return (
     <View style={styles.head}>
       <View style={styles.titles}>
+        {moreBack && !isWide ? (
+          <Link href="/more" role="link" accessibilityLabel="Back to More">
+            <AppText color="muted">‹ More</AppText>
+          </Link>
+        ) : null}
         {back ? (
           // dismissTo pops back to the list instead of stacking a second copy on top. After a deep
           // link straight to this page there is no list underneath, and the link replaces the page.

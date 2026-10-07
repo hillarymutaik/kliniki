@@ -44,6 +44,7 @@ export default function AppointmentsScreen() {
   return (
     <Screen>
       <ScreenHeader
+        moreBack
         title="Appointments"
         subtitle="Book, then move patients through the queue"
         actions={<Button label="Book appointment" onPress={() => modals.openAppointmentForm()} />}

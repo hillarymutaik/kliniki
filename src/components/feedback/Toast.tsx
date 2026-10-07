@@ -42,7 +42,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={show}>
       {children}
-      <View style={[styles.host, { bottom: isWide ? 28 : 84 + insets.bottom }]}>
+      <View style={[styles.host, { bottom: isWide ? 28 : 120 + Math.max(insets.bottom, 10) }]}>
         <Animated.View
           role="status"
           accessibilityLiveRegion="polite"

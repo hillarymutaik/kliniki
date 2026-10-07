@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { QueueAction } from '@/components/shared/QueueAction';
@@ -10,31 +9,36 @@ import { Panel } from '@/components/ui/Panel';
 import { Screen } from '@/components/ui/Screen';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Stat, StatGrid } from '@/components/ui/Stat';
-import { formatLongDate } from '@/domain/dates';
+import { TodayPhone } from '@/components/today/TodayPhone';
+import { clockTime, formatLongDate } from '@/domain/dates';
 import { kes } from '@/domain/money';
 import { findPatient } from '@/domain/patients';
-import { dashboardStats } from '@/domain/stats';
+import { greeting } from '@/domain/profile';
 import type { Appointment } from '@/domain/types';
-import { useToday } from '@/hooks/use-today';
-import { useData } from '@/store/hooks';
+import { useLayout } from '@/hooks/use-layout';
+import { useTodayData } from '@/hooks/use-today-data';
+import { useProfile } from '@/store/profile';
 import { useTheme } from '@/theme/theme';
 
 export default function TodayScreen() {
-  const data = useData();
-  const modals = useModals();
-  const today = useToday();
+  const { isWide } = useLayout();
+  return isWide ? <TodayWide /> : <TodayPhone />;
+}
 
-  const stats = useMemo(() => dashboardStats(data, today), [data, today]);
-  const queue = useMemo(
-    () => data.appointments.filter((a) => a.date === today).sort((a, b) => a.queueNo - b.queueNo),
-    [data.appointments, today],
-  );
+function TodayWide() {
+  const modals = useModals();
+  const profile = useProfile((state) => state.profile);
+  const { data, today, stats, queue } = useTodayData();
 
   return (
     <Screen>
       <ScreenHeader
         title="Today"
-        subtitle={formatLongDate(today)}
+        subtitle={
+          profile
+            ? `${greeting(clockTime())}, ${profile.name.split(' ')[0]} · ${formatLongDate(today)}`
+            : formatLongDate(today)
+        }
         actions={<Button label="Add walk-in" onPress={() => modals.openAppointmentForm({ walkIn: true })} />}
       />
 
@@ -80,7 +84,7 @@ function Ticket({ appointment, name }: { appointment: Appointment; name: string 
           backgroundColor: colors.bg,
           borderColor: colors.line,
           borderLeftColor: accent,
-          opacity: appointment.status === 'done' ? 0.7 : 1,
+          opacity: appointment.status === 'done' ? 0.85 : 1,
         },
       ]}
     >

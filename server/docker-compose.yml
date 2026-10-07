@@ -1,0 +1,51 @@
+# Local development stack: PostgreSQL + one-off migration + the API.
+#   JWT_SECRET=$(node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))") \
+#   docker compose -f server/docker-compose.yml up --build
+# The API is then on http://localhost:3000. Data lives in the "pgdata" volume.
+#
+# For real deployments use a managed or properly operated PostgreSQL inside Kenya (see README, "Hosting"),
+# not this file.
+
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev-only-owner-password}
+      POSTGRES_DB: kliniki
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d kliniki']
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    build:
+      context: ..
+      dockerfile: server/Dockerfile
+    command: ['node', 'dist/migrate-cli.js']
+    environment:
+      DATABASE_OWNER_URL: postgres://postgres:${POSTGRES_PASSWORD:-dev-only-owner-password}@db:5432/kliniki
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:-dev-only-app-password}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    build:
+      context: ..
+      dockerfile: server/Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: postgres://kliniki_app:${APP_DB_PASSWORD:-dev-only-app-password}@db:5432/kliniki
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET (at least 32 characters)}
+      REGISTRATION_CODE: ${REGISTRATION_CODE:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8081}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  pgdata:

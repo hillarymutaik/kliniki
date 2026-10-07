@@ -14,12 +14,16 @@ interface StatProps {
 }
 
 export function Stat({ value, label, valueColor = 'ink' }: StatProps) {
-  const { colors } = useTheme();
+  const { colors, dark } = useTheme();
   return (
     <View
       accessible
       accessibilityLabel={`${label}: ${value}`}
-      style={[styles.stat, { backgroundColor: colors.surface, borderColor: colors.line }]}
+      style={[
+        styles.stat,
+        { backgroundColor: colors.surface, borderColor: colors.line },
+        dark ? null : { boxShadow: '0 1px 3px rgba(18, 38, 58, 0.08)' },
+      ]}
     >
       <AppText weight={700} size={24} color={valueColor} style={styles.value}>
         {value}

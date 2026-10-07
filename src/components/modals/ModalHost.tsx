@@ -6,8 +6,11 @@ import { useToast } from '../feedback/Toast';
 import { ConfirmDialog } from '../ui/Dialog';
 import { AppointmentFormDialog } from './AppointmentFormDialog';
 import { BillDialog } from './BillDialog';
+import { ClinicFormDialog } from './ClinicFormDialog';
 import { DrugFormDialog } from './DrugFormDialog';
 import { PatientFormDialog } from './PatientFormDialog';
+import { ProfileFormDialog } from './ProfileFormDialog';
+import { QuickActionsSheet } from './QuickActionsSheet';
 import { RestockDialog } from './RestockDialog';
 
 interface ConfirmOptions {
@@ -24,6 +27,9 @@ type ModalState =
   | { type: 'drug' }
   | { type: 'restock'; drugId: string }
   | { type: 'bill'; patientId?: string }
+  | { type: 'profile' }
+  | { type: 'quick' }
+  | { type: 'clinic' }
   | ({ type: 'confirm' } & ConfirmOptions);
 
 /** Any screen can open any dialog, the way the prototype's global addPatient() and newBill() helpers did. */
@@ -33,6 +39,9 @@ export interface ModalApi {
   openDrugForm(): void;
   openRestock(drugId: string): void;
   openBill(patientId?: string): void;
+  openProfile(): void;
+  openQuickActions(): void;
+  openClinic(): void;
   confirm(options: ConfirmOptions): void;
 }
 
@@ -69,6 +78,9 @@ export function ModalHost({ children }: { children: ReactNode }) {
       openBill: (patientId) => {
         if (!lacksPatients()) setModal({ type: 'bill', patientId });
       },
+      openProfile: () => setModal({ type: 'profile' }),
+      openQuickActions: () => setModal({ type: 'quick' }),
+      openClinic: () => setModal({ type: 'clinic' }),
       confirm: (options) => setModal({ type: 'confirm', ...options }),
     };
   }, [toast]);
@@ -81,6 +93,9 @@ export function ModalHost({ children }: { children: ReactNode }) {
       {modal?.type === 'drug' ? <DrugFormDialog onClose={close} /> : null}
       {modal?.type === 'restock' ? <RestockDialog drugId={modal.drugId} onClose={close} /> : null}
       {modal?.type === 'bill' ? <BillDialog patientId={modal.patientId} onClose={close} /> : null}
+      {modal?.type === 'quick' ? <QuickActionsSheet api={api} onClose={close} /> : null}
+      {modal?.type === 'profile' ? <ProfileFormDialog onClose={close} /> : null}
+      {modal?.type === 'clinic' ? <ClinicFormDialog onClose={close} /> : null}
       {modal?.type === 'confirm' ? (
         <ConfirmDialog
           title={modal.title}

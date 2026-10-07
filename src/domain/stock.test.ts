@@ -1,5 +1,6 @@
 import { TODAY } from './testing';
 import {
+  allocateFefo,
   deductFefo,
   hasExpiredStock,
   hasExpiringStock,
@@ -119,5 +120,46 @@ describe('deductFefo', () => {
     const copy = JSON.parse(JSON.stringify(batches));
     deductFefo(batches, 5, TODAY);
     expect(batches).toEqual(copy);
+  });
+});
+
+describe('allocateFefo', () => {
+  const rows = [
+    { id: 'late', qty: 10, exp: addDays(TODAY, 200) },
+    { id: 'soon', qty: 3, exp: addDays(TODAY, 30) },
+    { id: 'dead', qty: 50, exp: addDays(TODAY, -2) },
+    { id: 'empty', qty: 0, exp: addDays(TODAY, 10) },
+  ];
+
+  it('plans soonest expiry first and spills into the next batch', () => {
+    const plan = allocateFefo(rows, 5, TODAY);
+    expect(plan.takes.map((t) => [t.batch.id, t.take])).toEqual([
+      ['soon', 3],
+      ['late', 2],
+    ]);
+    expect(plan.shortfall).toBe(0);
+  });
+
+  it('skips expired and empty batches, and reports what could not be supplied', () => {
+    const plan = allocateFefo(rows, 20, TODAY);
+    expect(plan.takes.map((t) => t.batch.id)).toEqual(['soon', 'late']);
+    expect(plan.shortfall).toBe(7);
+  });
+
+  it('is all shortfall when nothing is sellable, and leaves its input alone', () => {
+    const copy = JSON.parse(JSON.stringify(rows));
+    expect(allocateFefo([rows[2]], 4, TODAY)).toEqual({ takes: [], shortfall: 4 });
+    allocateFefo(rows, 5, TODAY);
+    expect(rows).toEqual(copy);
+  });
+
+  it('agrees with deductFefo about what gets drawn down', () => {
+    const batches = rows.map((r) => ({ no: r.id, qty: r.qty, exp: r.exp }));
+    const after = deductFefo(batches, 5, TODAY);
+    const drawn = Object.fromEntries(after.map((b) => [b.no, batches.find((x) => x.no === b.no)!.qty - b.qty]));
+    const plan = allocateFefo(rows, 5, TODAY);
+    expect(Object.fromEntries(plan.takes.map((t) => [t.batch.id, t.take]))).toEqual(
+      Object.fromEntries(Object.entries(drawn).filter(([, v]) => v > 0)),
+    );
   });
 });

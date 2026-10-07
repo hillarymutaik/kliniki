@@ -3,7 +3,6 @@ import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useToast } from '@/components/feedback/Toast';
-import { useModals } from '@/components/modals/ModalHost';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { DataTable, type Column } from '@/components/ui/DataTable';
@@ -15,7 +14,7 @@ import { billsToCsv } from '@/domain/csv';
 import { kes } from '@/domain/money';
 import { revenueByDay, revenueByMethod, topDrugs } from '@/domain/stats';
 import { useToday } from '@/hooks/use-today';
-import { useActions, useData } from '@/store/hooks';
+import { useData } from '@/store/hooks';
 import { useTheme } from '@/theme/theme';
 
 type Dispensed = { name: string; qty: number };
@@ -36,8 +35,6 @@ const DISPENSED_COLUMNS: Column<Dispensed>[] = [
 
 export default function ReportsScreen() {
   const data = useData();
-  const { resetDemoData } = useActions();
-  const modals = useModals();
   const toast = useToast();
   const today = useToday();
 
@@ -57,6 +54,7 @@ export default function ReportsScreen() {
   return (
     <Screen>
       <ScreenHeader
+        moreBack
         title="Reports"
         subtitle="All-time totals from this device"
         actions={<Button variant="ghost" label="Export bills (CSV)" onPress={exportCsv} />}
@@ -77,33 +75,6 @@ export default function ReportsScreen() {
           keyOf={(d) => d.name}
           empty={<EmptyState message="Nothing dispensed yet." />}
         />
-      </Panel>
-
-      <Panel
-        title="Data"
-        right={
-          <Button
-            size="sm"
-            variant="ghost"
-            label="Reset demo data"
-            onPress={() =>
-              modals.confirm({
-                title: 'Reset demo data?',
-                message: 'This replaces every patient, bill, claim and stock record on this device with the demo data.',
-                confirmLabel: 'Replace all data',
-                destructive: true,
-                onConfirm: () => {
-                  resetDemoData();
-                  toast('Demo data restored');
-                },
-              })
-            }
-          />
-        }
-      >
-        <AppText color="muted" style={styles.note}>
-          Data is saved on this device only. Syncing with a clinic server is not part of this build.
-        </AppText>
       </Panel>
     </Screen>
   );
@@ -140,5 +111,4 @@ const styles = StyleSheet.create({
   track: { flex: 1 },
   fill: { height: 14, borderRadius: 3 },
   barValue: { minWidth: 84, textAlign: 'right' },
-  note: { paddingHorizontal: 16, paddingVertical: 14 },
 });

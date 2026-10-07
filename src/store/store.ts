@@ -5,6 +5,7 @@ import { createJSONStorage, persist, type StateStorage } from 'zustand/middlewar
 import { advanceAppointment, bookAppointment, type AppointmentForm } from '@/domain/appointments';
 import { createBill, type BillForm } from '@/domain/billing';
 import { setClaimStatus } from '@/domain/claims';
+import { erasePatientRecords, renameClinic } from '@/domain/clinic';
 import { today } from '@/domain/dates';
 import { addDrug, receiveStock, type DrugForm, type StockForm } from '@/domain/drugs';
 import { newId } from '@/domain/ids';
@@ -25,6 +26,9 @@ export interface Actions {
   receiveStock(drugId: string, form: StockForm): ReturnType<typeof receiveStock>;
   createBill(form: BillForm): ReturnType<typeof createBill>;
   setClaimStatus(id: string, status: ClaimStatus): ReturnType<typeof setClaimStatus>;
+  renameClinic(name: string): ReturnType<typeof renameClinic>;
+  /** Deletes patients, visits, bills and claims; the pharmacy is kept. */
+  erasePatientRecords(): void;
   /** Replaces everything with the demo data. */
   resetDemoData(): void;
 }
@@ -83,6 +87,8 @@ export const useKlinikiStore = create<KlinikiState>()(
           receiveStock: (drugId, form) => commit(receiveStock(get().data, drugId, form, runtimeCtx())),
           createBill: (form) => commit(createBill(get().data, form, runtimeCtx())),
           setClaimStatus: (id, status) => commit(setClaimStatus(get().data, id, status)),
+          renameClinic: (name) => commit(renameClinic(get().data, name)),
+          erasePatientRecords: () => set({ data: erasePatientRecords(get().data) }),
           resetDemoData: () => set({ data: seedData(today()) }),
         },
       };

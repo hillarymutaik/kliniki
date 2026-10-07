@@ -14,6 +14,7 @@ pharmacy stock, billing (M-Pesa, cash or SHA) and SHA claims. It is one React Na
 | Billing | Services and drugs on one bill; dispensed drugs come off stock first-expiry-first-out |
 | SHA claims | Bills paid through SHA draft a claim automatically: Draft → Submitted → Approved or Rejected |
 | Reports | Revenue for the last 7 days and by payment method, most dispensed drugs, bills copied as CSV |
+| Settings | Your name and role, clinic name, light/dark theme, privacy policy, terms of use, export all data, delete patient records |
 
 ## Running it
 
@@ -27,8 +28,11 @@ npm run android    # Android emulator or a connected device
 npm run ios        # iOS simulator (macOS only); on Windows use Expo Go on an iPhone
 ```
 
-Wide screens (over 820px) get a sidebar; phones and narrow windows get a bottom tab bar. The app follows
-the system light or dark setting.
+Wide screens (over 820px) get a sidebar. Phones and narrow windows get a floating tab bar with Today, Patients,
+Pharmacy and More, and a centre **+** button for quick actions (walk-in, new bill, register patient, book
+appointment, add drug). Appointments, Billing, SHA claims, Reports and Settings are under More. The app follows
+the device's light or dark setting by default; switch to Light or Dark under *Settings → Appearance*
+(or in the sidebar on wide screens), and the choice is remembered.
 
 ## Checks
 
@@ -47,16 +51,25 @@ src/
   domain/       business rules as plain TypeScript with tests: billing, stock, claims, dates in EAT, validation
   store/        Zustand store, saved on the device with AsyncStorage (localStorage on the web)
   components/   UI kit (ui/), dialogs (modals/), app shell (layout/), toasts (feedback/)
-  theme/        colours, Figtree font weights
+  theme/        colours, theme preference, Figtree font weights
+server/         the backend API and database (Fastify + PostgreSQL); see server/README.md
+  content/      the privacy policy and terms of use text (review these with the clinic before real patient use)
 ```
 
 Screens never change data directly: every change goes through a store action, which calls a pure function
 in `src/domain` and keeps the result only if it succeeded. Forms show the errors those functions return.
 
+## Backend
+
+`server/` holds the API and database the app will sync with: multi-clinic, row-level tenant isolation, offline
+sync, stock and billing rules shared with the app. It has its own README, tests and Docker files. **The app does
+not use it yet** and still keeps everything on the device.
+
 ## Data
 
-Everything is stored on the device the app runs on; there is no server yet. A fresh install starts with
-demo data, and *Reports → Reset demo data* puts it back.
+Everything is stored on the device the app runs on; there is no server yet. *Settings → Privacy & data* can
+copy all records as text, delete every patient record, or restore the demo data. A fresh install starts with
+demo data, and *Settings → Reset demo data* puts it back.
 
 ## Differences from the prototype
 
@@ -70,8 +83,9 @@ The design and behaviour follow the original HTML prototype. These are the delib
 - **Stricter forms**: a date of birth cannot be in the future, quantities and prices are whole numbers, and
   phone numbers are saved without spaces.
 - **CSV export defuses spreadsheet formulas** (a patient named `=HYPERLINK(...)` is exported as text).
-- **Contrast**: two text colours are slightly darker, and dark mode uses dark text on green buttons, to meet
-  WCAG AA.
+- **Brighter, higher-contrast colours**: the dark theme is a lifted slate instead of near-black, the light page
+  is whiter with stronger borders and secondary text, and every text colour meets WCAG AA.
+- **Theme switch** (Auto, Light, Dark) saved on the device.
 
 ## Shipping
 

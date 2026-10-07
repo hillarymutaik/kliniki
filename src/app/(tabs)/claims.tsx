@@ -77,7 +77,7 @@ export default function ClaimsScreen() {
 
   return (
     <Screen>
-      <ScreenHeader title="SHA claims" subtitle="Bills paid via SHA create a draft claim here" />
+      <ScreenHeader moreBack title="SHA claims" subtitle="Bills paid via SHA create a draft claim here" />
       <StatGrid>
         {totals.map(({ status, amount }) => (
           <Stat key={status} value={kes(amount)} label={status} />

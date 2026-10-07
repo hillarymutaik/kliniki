@@ -19,7 +19,8 @@ export function Screen({ children }: { children: ReactNode }) {
         {
           // The sidebar fills the full height on wide screens, so only narrow ones need to clear the status bar.
           paddingTop: isWide ? 28 : insets.top + 20,
-          paddingBottom: 32 + (isWide ? insets.bottom : 0),
+          // On a phone the floating tab bar sits over the bottom of the page, so leave room beneath the last card.
+          paddingBottom: isWide ? 32 + insets.bottom : 124 + insets.bottom,
           paddingLeft: gutter,
           paddingRight: gutter + (isWide ? insets.right : 0),
         },

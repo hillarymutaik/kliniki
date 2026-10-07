@@ -40,3 +40,10 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# backend
+server/.env
+server/.env.*
+!server/.env.example
+server/dist/
+server/.pgdata/

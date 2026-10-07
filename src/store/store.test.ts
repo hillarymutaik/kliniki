@@ -61,6 +61,20 @@ describe('actions', () => {
     expect(state().actions).toBe(first);
   });
 
+  it('renames the clinic, and refuses a blank name', () => {
+    expect(state().actions.renameClinic(' Tumaini Clinic ').ok).toBe(true);
+    expect(state().data.clinic).toBe('Tumaini Clinic');
+    expect(state().actions.renameClinic('  ').ok).toBe(false);
+    expect(state().data.clinic).toBe('Tumaini Clinic');
+  });
+
+  it('erases patient records but keeps the pharmacy', () => {
+    state().actions.erasePatientRecords();
+    expect(state().data.patients).toHaveLength(0);
+    expect(state().data.bills).toHaveLength(0);
+    expect(state().data.drugs).toHaveLength(5);
+  });
+
   it('resets to the demo data', () => {
     state().actions.registerPatient(patientForm);
     state().actions.resetDemoData();

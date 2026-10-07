@@ -1,20 +1,21 @@
 import { usePathname } from 'expo-router';
 import { Tabs, TabList, TabSlot, TabTrigger, type TabListProps, type TabTriggerSlotProps } from 'expo-router/ui';
-import { useEffect, type ReactNode } from 'react';
+import { Children, isValidElement, useEffect, type ReactElement, type ReactNode } from 'react';
 import { Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useData } from '@/store/hooks';
 import { useLayout } from '@/hooks/use-layout';
-import { NAV_ITEMS, navItemForPath, type NavItem } from '@/navigation/items';
+import { activeTabName, NAV_ITEMS, navItemForPath, PHONE_TABS, type NavItem } from '@/navigation/items';
+import { useData } from '@/store/hooks';
 import { useTheme } from '@/theme/theme';
 
+import { useModals } from '../modals/ModalHost';
 import { AppText } from '../ui/AppText';
 import { Icon } from '../ui/Icon';
 
 /**
- * The app frame: a sidebar beside the page on wide screens, a tab bar under it on narrow ones.
- * Each page is a route; the tabs only decide which one is showing.
+ * The app frame: a sidebar beside the page on wide screens; on phones a floating tab bar with a
+ * quick-action button in the middle. Each page is a route; the tabs only decide which one is showing.
  */
 export function AppShell() {
   const { colors } = useTheme();
@@ -27,7 +28,7 @@ export function AppShell() {
   }, [current.label]);
 
   return (
-    <Tabs style={[styles.shell, { backgroundColor: colors.bg, flexDirection: isWide ? 'row' : 'column-reverse' }]}>
+    <Tabs style={[styles.shell, { backgroundColor: colors.bg, flexDirection: isWide ? 'row' : 'column' }]}>
       <TabList asChild>
         <NavBar>
           {NAV_ITEMS.map((item) => (
@@ -43,10 +44,23 @@ export function AppShell() {
   );
 }
 
+/** Every section needs a trigger so it can be routed to, but each bar only shows some of them. */
+function pick(children: ReactNode, names: readonly string[]): ReactElement[] {
+  const all = Children.toArray(children).filter(isValidElement) as ReactElement<{ name: string }>[];
+  return names.flatMap((name) => all.filter((child) => child.props.name === name));
+}
+
 function NavBar({ children }: TabListProps) {
   const { isWide } = useLayout();
-  return isWide ? <Sidebar>{children}</Sidebar> : <BottomBar>{children}</BottomBar>;
+  return isWide ? (
+    <Sidebar>{Children.toArray(children).filter((c) => !(isValidElement(c) && isPhoneOnly(c)))}</Sidebar>
+  ) : (
+    <FloatingBar>{children}</FloatingBar>
+  );
 }
+
+const isPhoneOnly = (child: ReactElement) =>
+  NAV_ITEMS.some((item) => item.phoneOnly && item.name === (child.props as { name?: string }).name);
 
 function Sidebar({ children }: { children: ReactNode }) {
   const { colors } = useTheme();
@@ -89,24 +103,51 @@ function Sidebar({ children }: { children: ReactNode }) {
   );
 }
 
-function BottomBar({ children }: { children: ReactNode }) {
-  const { colors } = useTheme();
+/** Two tabs, the quick-action button, then two more: five slots instead of a crowded row of eight. */
+function FloatingBar({ children }: { children: ReactNode }) {
+  const { colors, dark } = useTheme();
   const insets = useSafeAreaInsets();
+  const modals = useModals();
+  const [first, second, third, fourth] = PHONE_TABS;
+
   return (
     <View
-      role="navigation"
-      aria-label="Main"
-      style={[
-        styles.bottomBar,
-        {
-          backgroundColor: colors.side,
-          paddingBottom: 6 + insets.bottom,
-          paddingLeft: 6 + insets.left,
-          paddingRight: 6 + insets.right,
-        },
-      ]}
+      pointerEvents="box-none"
+      style={[styles.floatWrap, { bottom: Math.max(insets.bottom, 10), left: 12 + insets.left, right: 12 + insets.right }]}
     >
-      {children}
+      <View
+        role="navigation"
+        aria-label="Main"
+        style={[
+          styles.pill,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.line,
+            boxShadow: dark ? '0 6px 20px rgba(0, 0, 0, 0.45)' : '0 6px 20px rgba(18, 38, 58, 0.16)',
+          },
+        ]}
+      >
+        {pick(children, [first, second])}
+        <View style={styles.centerSlot}>
+          <Pressable
+            role="button"
+            aria-label="Quick actions"
+            onPress={modals.openQuickActions}
+            style={({ pressed }) => [
+              styles.centerButton,
+              {
+                backgroundColor: colors.brand,
+                borderColor: colors.surface,
+                opacity: pressed ? 0.85 : 1,
+                boxShadow: `0 4px 14px ${dark ? 'rgba(70, 199, 154, 0.35)' : 'rgba(31, 122, 90, 0.4)'}`,
+              },
+            ]}
+          >
+            <Icon name="plus" size={32} color="onBrand" />
+          </Pressable>
+        </View>
+        {pick(children, [third, fourth])}
+      </View>
     </View>
   );
 }
@@ -114,9 +155,32 @@ function BottomBar({ children }: { children: ReactNode }) {
 function NavButton({ item, isFocused, ...pressable }: TabTriggerSlotProps & { item: NavItem }) {
   const { colors } = useTheme();
   const { isWide } = useLayout();
-  const active = !!isFocused;
-  const tone = active ? 'onBrand' : 'sideInk';
+  const pathname = usePathname();
+  // On a phone a section inside More lights up the More tab; the trigger's own isFocused only knows its own route.
+  const active = isWide ? !!isFocused : activeTabName(pathname) === item.name;
 
+  if (isWide) {
+    const tone = active ? 'onBrand' : 'sideInk';
+    return (
+      <Pressable
+        {...pressable}
+        role="link"
+        aria-label={item.label}
+        aria-current={active ? 'page' : undefined}
+        style={({ pressed }) => [
+          styles.navWide,
+          { backgroundColor: active ? colors.brand : pressed ? 'rgba(255,255,255,0.06)' : 'transparent' },
+        ]}
+      >
+        <Icon name={item.icon} size={20} color={tone} />
+        <AppText size={15} weight={500} color={tone} numberOfLines={1}>
+          {item.label}
+        </AppText>
+      </Pressable>
+    );
+  }
+
+  const tone = active ? 'brandText' : 'muted';
   return (
     <Pressable
       {...pressable}
@@ -124,13 +188,13 @@ function NavButton({ item, isFocused, ...pressable }: TabTriggerSlotProps & { it
       aria-label={item.label}
       aria-current={active ? 'page' : undefined}
       style={({ pressed }) => [
-        isWide ? styles.navWide : styles.navNarrow,
-        { backgroundColor: active ? colors.brand : pressed ? 'rgba(255,255,255,0.06)' : 'transparent' },
+        styles.navNarrow,
+        { backgroundColor: active ? colors.brandSoft : pressed ? colors.bg : 'transparent' },
       ]}
     >
-      <Icon name={item.icon} size={isWide ? 20 : 22} color={tone} />
-      <AppText size={isWide ? 15 : 11} weight={500} color={tone} numberOfLines={1} style={styles.navLabel}>
-        {isWide ? item.label : item.shortLabel}
+      <Icon name={item.icon} size={26} color={tone} />
+      <AppText size={12} weight={active ? 700 : 500} color={tone} numberOfLines={1} style={styles.navLabel}>
+        {item.label}
       </AppText>
     </Pressable>
   );
@@ -153,7 +217,28 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(255,255,255,0.1)',
   },
   clinicName: { color: '#FFFFFF' },
-  bottomBar: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: 6 },
+  // The bar comes before the page in the tree, so without a z-index the page paints (and takes taps) over it.
+  floatWrap: { position: 'absolute', alignItems: 'center', zIndex: 20, elevation: 20 },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: 520,
+    padding: 6,
+    borderRadius: 36,
+    borderWidth: 1,
+  },
+  centerSlot: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  centerButton: {
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    borderWidth: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: -10,
+    ...pointer,
+  },
   navWide: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -167,10 +252,9 @@ const styles = StyleSheet.create({
   navNarrow: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 2,
-    borderRadius: 8,
+    paddingVertical: 8,
+    borderRadius: 28,
     ...pointer,
   },
-  navLabel: { lineHeight: 16 },
+  navLabel: { lineHeight: 16, marginTop: 1 },
 });

@@ -21,14 +21,16 @@ export interface Palette {
   overlay: string;
 }
 
-// Colours come from the Kliniki prototype. Two light-theme values are a touch darker than the original
-// (amber and brandText) and `onBrand` is dark in the dark theme, so small text meets WCAG AA contrast.
+// Same green-and-navy identity as the prototype, tuned for brightness and legibility. The light page
+// is a touch whiter and its borders and secondary text a touch stronger; the dark theme is a lifted
+// slate rather than near-black. Every text pairing meets WCAG AA (4.5:1), and `onBrand` is dark in the
+// dark theme because the brighter green needs dark text on it.
 export const lightPalette: Palette = {
-  bg: '#EEF2F0',
+  bg: '#F4F8F6',
   surface: '#FFFFFF',
   ink: '#12263A',
-  muted: '#5B6B78',
-  line: '#D6DEDA',
+  muted: '#4F5F6B',
+  line: '#CBD7D2',
   brand: '#1F7A5A',
   brandSoft: '#DDEFE7',
   brandText: '#17644A',
@@ -45,22 +47,22 @@ export const lightPalette: Palette = {
 };
 
 export const darkPalette: Palette = {
-  bg: '#0F1A22',
-  surface: '#16242F',
-  ink: '#E4ECF1',
-  muted: '#93A4B1',
-  line: '#26394A',
-  brand: '#3FB889',
-  brandSoft: '#173A2E',
-  brandText: '#3FB889',
-  onBrand: '#08140F',
-  amber: '#E0A04A',
-  amberSoft: '#3A2C16',
-  red: '#EF7B73',
-  redSoft: '#3D1F1D',
-  blue: '#6FA8E8',
-  blueSoft: '#18304A',
-  side: '#0A131A',
-  sideInk: '#9FB2C1',
+  bg: '#1A2B3A',
+  surface: '#243A4D',
+  ink: '#F2F7FA',
+  muted: '#B4C3CF',
+  line: '#3E566B',
+  brand: '#46C79A',
+  brandSoft: '#1F4D3E',
+  brandText: '#63DDB2',
+  onBrand: '#06150F',
+  amber: '#F2B45C',
+  amberSoft: '#4D3A1A',
+  red: '#FF9188',
+  redSoft: '#5C2B29',
+  blue: '#86BCF6',
+  blueSoft: '#21425F',
+  side: '#13293C',
+  sideInk: '#C9D8E4',
   overlay: 'rgba(10, 20, 30, 0.5)',
 };

@@ -70,6 +70,7 @@ export default function BillingScreen() {
   return (
     <Screen>
       <ScreenHeader
+        moreBack
         title="Billing"
         subtitle="Dispensed drugs are deducted from stock automatically"
         actions={<Button label="New bill" onPress={() => modals.openBill()} />}

@@ -14,9 +14,16 @@ interface PanelProps {
 }
 
 export function Panel({ title, right, children, style }: PanelProps) {
-  const { colors } = useTheme();
+  const { colors, dark } = useTheme();
   return (
-    <View style={[styles.panel, { backgroundColor: colors.surface, borderColor: colors.line }, style]}>
+    <View
+      style={[
+        styles.panel,
+        { backgroundColor: colors.surface, borderColor: colors.line },
+        dark ? null : { boxShadow: '0 1px 3px rgba(18, 38, 58, 0.08)' },
+        style,
+      ]}
+    >
       {title ? (
         <View style={[styles.header, { borderBottomColor: colors.line }]}>
           <AppText role="heading" aria-level={2} weight={700} size={16}>

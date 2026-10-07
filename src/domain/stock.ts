@@ -4,7 +4,7 @@ import type { Batch, Drug } from './types';
 export const EXPIRY_WARNING_DAYS = 60;
 
 /** A batch dated today or earlier counts as expired, the same rule applied when stock is received. */
-export const isExpired = (batch: Batch, today: string) => batch.exp <= today;
+export const isExpired = (batch: Pick<Batch, 'exp'>, today: string) => batch.exp <= today;
 
 /** Physical count on the shelf, expired batches included. */
 export const onHand = (drug: Drug) => drug.batches.reduce((sum, batch) => sum + batch.qty, 0);
@@ -54,4 +54,35 @@ export function deductFefo(batches: Batch[], qty: number, today: string): Batch[
       remaining -= taken;
       return { ...batch, qty: batch.qty - taken };
     });
+}
+
+export interface FefoAllocation<T> {
+  /** Units to take from each batch, soonest expiry first. Only batches that supply something appear. */
+  takes: { batch: T; take: number }[];
+  /** Units that could not be supplied from sellable stock. */
+  shortfall: number;
+}
+
+/**
+ * First-expiry-first-out planning for callers that hold their own batch records (the server's database
+ * rows): says how much to take from which batch without changing anything. Expired and empty batches are
+ * never used, the same rules as `deductFefo`, which this deliberately leaves alone.
+ */
+export function allocateFefo<T extends { qty: number; exp: string }>(
+  batches: T[],
+  qty: number,
+  today: string,
+): FefoAllocation<T> {
+  let remaining = qty;
+  const takes: FefoAllocation<T>['takes'] = [];
+  const usable = batches
+    .filter((batch) => batch.qty > 0 && !isExpired(batch, today))
+    .sort((a, b) => a.exp.localeCompare(b.exp));
+  for (const batch of usable) {
+    if (remaining <= 0) break;
+    const take = Math.min(batch.qty, remaining);
+    takes.push({ batch, take });
+    remaining -= take;
+  }
+  return { takes, shortfall: Math.max(0, remaining) };
 }
